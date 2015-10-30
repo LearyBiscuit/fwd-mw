@@ -1,41 +1,35 @@
 var querystring = require("querystring");
-
-
-function start(response, postData) {
-  console.log("Request handler 'start' was called.");
-
-  var body = '<html>'+
-    '<head>'+
-    '<meta http-equiv="Content-Type" content="text/html; '+
-    'charset=UTF-8" />'+
-    '</head>'+
-    '<body>'+
-    'Hi' +
-    '</body>'+
-    '</html>';
-
-    response.writeHead(200, {"Content-Type": "text/html"});
-    response.write(body);
-    response.end();
-}
-
-function deploy(response, postData) {
-  console.log("Request handler 'upload' was called.");
-  response.writeHead(200, {"Content-Type": "text/plain"});
-  branch = querystring.parse(postData).branch;
-  target = querystring.parse(postData).target;
-  application = querystring.parse(postData).application;
-  country = querystring.parse(postData).cc;
+var deploy = require("./lib/deploy.js");
   
-  if ((branch === undefined) || (target === undefined) || (application === undefined) || (country === undefined)) {
-    response.write("Haven't got enough parameters to deploy");
-  } else {
-    response.write("Need to deploy " + branch + " branch of the " + application + " appication " + 
-	" to the  " + country + " " + target + " server."
-    );
+function defaultRoute(response, postData) {
+    console.log("Default handler was called.");
+    response.writeHead(401, {"Content-Type": "text/html"});
+    response.write('401');
+    response.end();
   }
-  response.end();
-}
 
-exports.start = start;
-exports.deploy = deploy;
+  function semaphoreCI(response, postData) {
+    console.log("Request handler 'semaphoreci' was called.");
+    response.writeHead(200, {"Content-Type": "text/plain"});
+    parsedWebHook = JSON.parse(postData);
+    console.log(parsedWebHook.result);
+    branch = parsedWebHook.branch_name;
+    application = parsedWebHook.project_name;
+   if (parsedWebHook.result == 'passed') deploy.onSemaphoreCIHook(application, branch);
+    response.end();
+  }
+
+  function gitHub(response, postData) {
+    console.log("Request handler 'github' was called.");
+    response.writeHead(200, {"Content-Type": "text/plain"});
+    parsedWebHook = JSON.parse(postData);
+    console.log(parsedWebHook.ref);
+    branch = parsedWebHook.ref.replace(/^refs\/heads\//i, '');
+    application = parsedWebHook.project_name;
+    deploy.onGitHubPushHook(application, branch);
+    response.end();
+  }
+  
+module.exports.defaultRoute = defaultRoute;
+module.exports.semaphoreci = semaphoreCI;
+module.exports.github = gitHub;

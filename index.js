@@ -4,8 +4,8 @@ var requestHandlers = require("./requestHandlers");
 
 var handle = {};
 
-handle["/"] = requestHandlers.start;
-//handle["/update"] = requestHandlers.update;
-handle["/deploy"] = requestHandlers.deploy;
+handle["/"] = requestHandlers.defaultRoute;
+handle["/github"] = requestHandlers.github;
+handle["/semaphoreci"] = requestHandlers.semaphoreci;
 
 server.start(router.route, handle);
