@@ -1,5 +1,5 @@
 {
-  "name": "atd-middleware",
+  "name": "fwd-mw",
   "version": "0.0.1",
   "description": "A simple API to process GitHub and SemaphoreCI hooks.",
   "main": "index.js",
